@@ -476,3 +476,39 @@ async function checkConverter() {
   }
   exportYmapBtn.disabled = !converterReady || !reviewReady || activeOperation;
 }
+
+const installedVersion = '0.2.4';
+const repository = 'Headache-Developments/HD_ConflictTool';
+
+function isNewerVersion(candidate, installed) {
+  if (!/^\d+\.\d+\.\d+$/.test(candidate)) return false;
+  const current = installed.split('.').map(Number);
+  const latest = candidate.split('.').map(Number);
+  if (!latest.every(Number.isSafeInteger)) return false;
+  for (const [index, part] of latest.entries()) {
+    if (part !== current[index]) return part > current[index];
+  }
+  return false;
+}
+
+async function checkForUpdate() {
+  try {
+    const response = await fetch(`https://raw.githubusercontent.com/${repository}/main/VERSION.txt`, {
+      cache: 'no-store',
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!response.ok) return;
+    const latest = (await response.text()).trim();
+    if (!isNewerVersion(latest, installedVersion)) return;
+    document.querySelector('#update-message').textContent = `Update available: v${latest}. You’re using v${installedVersion}.`;
+    document.querySelector('#update-download').href = `https://github.com/${repository}/archive/refs/tags/v${latest}.zip`;
+    document.querySelector('#update-banner').hidden = false;
+  } catch {
+    // Checking for updates is optional when GitHub is unreachable.
+  }
+}
+
+checkForUpdate();
+setInterval(checkForUpdate, 30 * 60 * 1000);

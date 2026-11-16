@@ -15,3 +15,9 @@ A local browser tool for reviewing conflicts across GTA V YMAP files. Its bundle
 The converter runs only on your computer; files are not sent to a remote server. The Windows x64 .NET runtime is included. This is a standalone tool and is launched separately from FiveM. Entity overlaps use a non-zero GUID when available, otherwise archetype name plus position rounded to three decimals. A moved entity without a GUID may be treated as a separate placement. Field choices are applied in place to the matching placements. Entity order, map-specific LOD fields, and other XML sections are retained. Unchanged binary inputs are returned byte for byte. Review edited maps in CodeWalker and calculate extents and flags before streaming them, particularly after changing a model, transform, or LOD distance. Export retains overlapping copies for separately deployed map versions.
 
 CodeWalker.Core is distributed under the notices in `converter/THIRD-PARTY-NOTICES.txt`.
+
+## Update notifications
+
+The tool checks the public GitHub repository at startup and every 30 minutes. When a newer version is available, the banner links to its tagged Windows ZIP. Finish your current review, close the tool, extract the update, and run its launcher. The check sends no map files.
+
+When publishing, set the browser's installed version and VERSION.txt to the same version and push main and the matching v-prefixed tag together.
