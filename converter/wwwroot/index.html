@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a1018">
+  <title>hd_conflicttool</title>
+  <link rel="stylesheet" href="styles.css?v=0.2.3">
+  <script src="app.js?v=0.2.3" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">HD</span>
+        <div><h1>YMAP Conflict Tool</h1><p>Find the overlap. Keep your maps.</p></div>
+      </div>
+      <div class="header-actions">
+        <span id="converter-state" class="converter-state" role="status">Checking local converter…</span>
+        <button id="open-guide" type="button">Tool guide</button>
+      </div>
+    </header>
+    <div class="workspace">
+      <aside class="sidebar" aria-labelledby="sources-heading">
+        <header class="section-head"><h2 id="sources-heading">Source maps</h2><span id="file-count" class="count" aria-live="polite">0 FILES</span></header>
+        <div class="dropzone" id="dropzone">
+          <strong>Drop maps or folders here</strong>
+          <small>.ymap and CodeWalker XML</small>
+          <div class="pick-actions">
+            <button type="button" id="browse-files">Browse files</button>
+            <button type="button" id="browse-folder">Choose folder</button>
+          </div>
+        </div>
+        <input id="file-input" type="file" accept=".ymap,.xml,.ymap.xml,application/xml,application/octet-stream" multiple hidden>
+        <input id="folder-input" type="file" accept=".ymap,.xml" webkitdirectory multiple hidden>
+        <div class="operation-progress" id="load-progress" hidden><span role="status">Loading files</span><progress aria-label="Loading files"></progress></div>
+        <div id="file-list" class="file-list"><div class="empty-files">No maps loaded.</div></div>
+        <button id="scan-btn" class="primary-btn" disabled>Scan maps for conflicts</button>
+      </aside>
+      <section class="review-panel" aria-labelledby="review-heading">
+        <header class="review-top">
+          <div class="section-head"><h2 id="review-heading">Conflict review</h2><span id="review-status" class="review-status" role="status">Waiting for maps</span></div>
+          <div class="operation-progress" id="scan-progress" hidden><span role="status">Scanning placements</span><progress aria-label="Scanning placements"></progress></div>
+          <div id="summary" class="summary" hidden></div>
+        </header>
+        <div id="review-content" class="review-content">
+          <div class="welcome">
+            <div class="map-glyph" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="m3 8 9-4 8 4 9-4v20l-9 4-8-4-9 4zM12 4v20m8-16v20"/></svg></div>
+            <h3>Add maps to get started</h3>
+            <p>Browse for files or drop a folder to scan its subfolders.</p>
+          </div>
+        </div>
+        <footer class="export-bar">
+          <div><strong>Export maps</strong><small>YMAPs download together in one ZIP.</small></div>
+          <div class="operation-progress" id="export-progress" hidden><span role="status">Preparing exports</span><progress aria-label="Preparing exports"></progress></div>
+          <div class="export-actions"><button id="export-xml-btn" disabled>Export XML</button><button id="export-ymap-btn" class="primary-btn" disabled>Download YMAP ZIP</button></div>
+        </footer>
+      </section>
+    </div>
+    <footer class="support-bar">
+      <span>Review together. Export separately.</span>
+      <a href="https://discord.gg/GTJZgBCvZx" target="_blank" rel="noopener noreferrer">For further questions, open a ticket here</a>
+    </footer>
+  </main>
+  <dialog id="tool-guide" aria-labelledby="guide-title">
+    <header class="section-head">
+      <h2 id="guide-title">Tool guide</h2>
+      <form method="dialog"><button autofocus>Close guide</button></form>
+    </header>
+    <ol>
+      <li><strong>Add your maps.</strong> Browse for .ymap or CodeWalker XML files, or choose a folder to include its subfolders.</li>
+      <li><strong>Scan for conflicts.</strong> Check which maps share placements, then continue to field review.</li>
+      <li><strong>Choose values.</strong> Use the source selector on each changed field to choose which value to apply.</li>
+      <li><strong>Export your maps.</strong> Download the YMAP ZIP to get every binary map in one folder. Choose Export XML for individual CodeWalker files.</li>
+    </ol>
+    <p class="guide-note">Each source map exports separately. If the maps stream together, review overlapping placements in CodeWalker before deploying them.</p>
+    <a href="https://discord.gg/GTJZgBCvZx" target="_blank" rel="noopener noreferrer">For further questions, open a ticket here</a>
+  </dialog>
+</body>
+</html>
