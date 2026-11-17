@@ -361,6 +361,17 @@ function exportMapYmaps() {
   if (reviewReady && converterReady) return exportMaps(true);
 }
 
+function ymapArchivePaths(maps) {
+  const keys = maps.map(({name}) => {
+    if (/[<>:"/\\|?*\x00-\x1f]/.test(name)) throw new Error(`Invalid output filename: ${name}`);
+    return name.normalize('NFC').toLowerCase();
+  });
+  const counts = new Map();
+  for (const key of keys) counts.set(key, (counts.get(key) || 0) + 1);
+  return maps.map(({name}, index) =>
+    counts.get(keys[index]) > 1 ? `source-${index + 1}/${name}` : name
+  );
+}
 async function zipYmaps(files) {
   if (files.length > 0xffff) throw new Error('Too many maps for one ZIP.');
   const crcTable = Uint32Array.from({length:256}, (_, index) => {
@@ -421,15 +432,7 @@ function exportMaps(binary) {
     updateProgress('export', 'Applying reviewed choices…');
     await paint();
     const maps = createMapExports();
-    if (binary) {
-      const names = new Set();
-      for (const {name} of maps) {
-        const key = name.normalize('NFC').toLowerCase();
-        if (/[<>:"/\\|?*\x00-\x1f]/.test(name)) throw new Error(`Invalid output filename: ${name}`);
-        if (names.has(key)) throw new Error(`More than one source exports as ${name}. Export those alternatives in separate batches.`);
-        names.add(key);
-      }
-    }
+    const archivePaths = binary ? ymapArchivePaths(maps) : [];
     const results = [];
     for (const map of maps) {
       updateProgress('export', `Preparing ${map.name} · ${results.length + 1} of ${maps.length}`, results.length, maps.length);
@@ -450,7 +453,7 @@ function exportMaps(binary) {
           }
           blob = await response.blob();
         }
-        results.push({blob, name: binary ? map.name : map.name + '.xml'});
+        results.push({blob, name: binary ? archivePaths[results.length] : map.name + '.xml'});
       } catch (error) {
         throw new Error(`${map.source.label}: ${error.message}`);
       }
@@ -477,7 +480,7 @@ async function checkConverter() {
   exportYmapBtn.disabled = !converterReady || !reviewReady || activeOperation;
 }
 
-const installedVersion = '0.2.6';
+const installedVersion = '0.2.7';
 const repository = 'Headache-Developments/HD_ConflictTool';
 
 function isNewerVersion(candidate, installed) {
