@@ -362,15 +362,37 @@ function exportMapYmaps() {
 }
 
 function ymapArchivePaths(maps) {
-  const keys = maps.map(({name}) => {
-    if (/[<>:"/\\|?*\x00-\x1f]/.test(name)) throw new Error(`Invalid output filename: ${name}`);
-    return name.normalize('NFC').toLowerCase();
+  const invalidSegment = /[<>:"/\\|?*\x00-\x1f]|[. ]$/;
+  const pathKey = path => path.normalize('NFC').toLowerCase();
+  const paths = maps.map(({name, source}) => {
+    if (!name || invalidSegment.test(name)) throw new Error(`Invalid output filename: ${name}`);
+    const folders = source.sourcePath.split(/[\\/]/).slice(0, -1);
+    if (folders.some(folder => !folder || invalidSegment.test(folder))) return name;
+    return [...folders, name].join('/');
   });
-  const counts = new Map();
-  for (const key of keys) counts.set(key, (counts.get(key) || 0) + 1);
-  return maps.map(({name}, index) =>
-    counts.get(keys[index]) > 1 ? `source-${index + 1}/${name}` : name
-  );
+  const used = new Set();
+  for (const path of paths) {
+    const parts = path.split('/');
+    parts.pop();
+    while (parts.length) {
+      used.add(pathKey(parts.join('/')));
+      parts.pop();
+    }
+  }
+  const roots = new Set(paths.map(path => pathKey(path.split('/')[0])));
+  return paths.map((path, index) => {
+    let candidate = path;
+    if (used.has(pathKey(path))) {
+      const base = `source-${index + 1}`;
+      let folder = base;
+      let suffix = 2;
+      while (roots.has(pathKey(folder))) folder = `${base}-${suffix++}`;
+      roots.add(pathKey(folder));
+      candidate = `${folder}/${maps[index].name}`;
+    }
+    used.add(pathKey(candidate));
+    return candidate;
+  });
 }
 async function zipYmaps(files) {
   if (files.length > 0xffff) throw new Error('Too many maps for one ZIP.');
@@ -480,7 +502,7 @@ async function checkConverter() {
   exportYmapBtn.disabled = !converterReady || !reviewReady || activeOperation;
 }
 
-const installedVersion = '0.2.7';
+const installedVersion = '0.2.8';
 const repository = 'Headache-Developments/HD_ConflictTool';
 
 function isNewerVersion(candidate, installed) {
