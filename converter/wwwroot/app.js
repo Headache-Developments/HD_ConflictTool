@@ -477,7 +477,7 @@ async function checkConverter() {
   exportYmapBtn.disabled = !converterReady || !reviewReady || activeOperation;
 }
 
-const installedVersion = '0.2.5';
+const installedVersion = '0.2.6';
 const repository = 'Headache-Developments/HD_ConflictTool';
 
 function isNewerVersion(candidate, installed) {
@@ -493,7 +493,7 @@ function isNewerVersion(candidate, installed) {
 
 async function checkForUpdate() {
   try {
-    const response = await fetch(`https://raw.githubusercontent.com/${repository}_Version/main/VERSION.txt`, {
+    const response = await fetch(`https://raw.githubusercontent.com/${repository}/main/VERSION.txt`, {
       cache: 'no-store',
       credentials: 'omit',
       referrerPolicy: 'no-referrer',
