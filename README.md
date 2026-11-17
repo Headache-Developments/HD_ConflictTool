@@ -18,6 +18,6 @@ CodeWalker.Core is distributed under the notices in `converter/THIRD-PARTY-NOTIC
 
 ## Update notifications
 
-The tool checks the public HD_ConflictTool_Version GitHub repository at startup and every 30 minutes. When a newer version is available, the banner links to its tagged Windows ZIP. Finish your current review, close the tool, extract the update, and run its launcher. The check sends no map files.
+The tool checks the public HD_ConflictTool GitHub repository at startup and every 30 minutes. When a newer version is available, the banner links to its tagged Windows ZIP. Finish your current review, close the tool, extract the update, and run its launcher. The check sends no map files.
 
-When publishing, set the browser's installed version and VERSION.txt to the same version in HD_ConflictTool, then push main and the matching v-prefixed tag together. Once the tagged package is available, publish the same VERSION.txt to HD_ConflictTool_Version.
+When publishing, set the browser's installed version and VERSION.txt to the same number. Merge the release pull request and tag the matching build. Keep the changelog in HD_ConflictTool_Version.
