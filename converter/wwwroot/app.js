@@ -169,7 +169,7 @@ function scan() {
           updateProgress('scan', `Scanning placements · ${checked} of ${total}`, checked, total);
           await paint();
         }
-        const key = entityKey(entity);
+        const key = JSON.stringify([mapFilename(source), entityKey(entity)]);
         if (!map.has(key)) map.set(key, []);
         map.get(key).push({sourceIndex, entityIndex, entity});
         checked++;
@@ -182,6 +182,10 @@ function scan() {
     updateProgress('scan', `Scan complete · ${checked} placements checked`, checked, total);
   });
 }
+function mapFilename(source) {
+  return source.file.name.replace(/(?:\.ymap)?\.(?:xml|ymap)$/i, '').normalize('NFC').toLowerCase() + '.ymap';
+}
+
 function entityKey(entity) {
   const guid = entity.querySelector('guid')?.getAttribute('value') || childText(entity, 'guid');
   const archetype = childText(entity, 'archetypeName') || 'unknown';
@@ -213,7 +217,7 @@ function renderConflictOverview() {
   summary.hidden = false;
   summary.innerHTML = `<div class="sum-item"><span class="sum-value">${sources.length}</span><span class="sum-label">MAP FILES SCANNED</span></div><div class="sum-item"><span class="sum-value">${conflictingMaps}</span><span class="sum-label">MAPS WITH OVERLAPS</span></div><div class="sum-item"><span class="sum-value">${duplicateGroups.length}</span><span class="sum-label">OVERLAPPING ENTITIES</span></div><div class="sum-item"><span class="sum-value">${changedFields}</span><span class="sum-label">FIELD DIFFERENCES</span></div>`;
   document.querySelector('#review-status').textContent = 'Conflicts found';
-  review.innerHTML = `<section class="conflict-overview"><div class="overview-heading"><div><h3>YMAP conflict overview</h3><p>Review every source map and its overlaps before opening merge choices.</p></div><span class="tag">${conflictingMaps} CONFLICTING MAPS</span></div><div class="conflict-table-wrap"><table class="conflict-table"><thead><tr><th>Source YMAP</th><th>Shared entities</th><th>Changed fields</th><th>Overlaps with</th><th>Status</th></tr></thead><tbody>${stats.map(item => `<tr><td class="source-cell" title="${esc(item.source.label)}">${esc(item.source.label)}</td><td>${item.overlaps}</td><td>${item.differences}</td><td class="peer-cell" title="${esc([...item.peers].join(', '))}">${item.peers.size ? esc([...item.peers].join(', ')) : '—'}</td><td><span class="tag ${item.overlaps ? '' : 'unique'}">${item.overlaps ? 'CONFLICT' : 'CLEAR'}</span></td></tr>`).join('')}</tbody></table></div><div class="overview-footnote">Overlaps match entities by GUID when available; otherwise by archetype and position. Exports keep the original map boundaries.</div><button id="continue-review-btn" class="primary-btn continue-review"><span>Continue to field review</span><span aria-hidden="true">↗</span></button></section>`;
+  review.innerHTML = `<section class="conflict-overview"><div class="overview-heading"><div><h3>YMAP conflict overview</h3><p>Only copies with the same YMAP filename are compared. Other maps pass through untouched.</p></div><span class="tag">${conflictingMaps} CONFLICTING MAPS</span></div><div class="conflict-table-wrap"><table class="conflict-table"><thead><tr><th>Source YMAP</th><th>Shared entities</th><th>Changed fields</th><th>Overlaps with</th><th>Status</th></tr></thead><tbody>${stats.map(item => `<tr><td class="source-cell" title="${esc(item.source.label)}">${esc(item.source.label)}</td><td>${item.overlaps}</td><td>${item.differences}</td><td class="peer-cell" title="${esc([...item.peers].join(', '))}">${item.peers.size ? esc([...item.peers].join(', ')) : '—'}</td><td><span class="tag ${item.overlaps ? '' : 'unique'}">${item.overlaps ? 'CONFLICT' : 'CLEAR'}</span></td></tr>`).join('')}</tbody></table></div><div class="overview-footnote">Within each matching filename, placements match by GUID when available; otherwise by archetype and position. Exports keep the original map boundaries.</div><button id="continue-review-btn" class="primary-btn continue-review"><span>Continue to field review</span><span aria-hidden="true">↗</span></button></section>`;
   document.querySelector('#continue-review-btn').addEventListener('click', buildReview);
   reviewReady = false;
   exportXmlBtn.disabled = true;
@@ -227,7 +231,7 @@ function buildReview() {
   const summary = document.querySelector('#summary'); summary.hidden = false;
   summary.innerHTML = `<div class="sum-item"><span class="sum-value">${groups.length}</span><span class="sum-label">PLACEMENT GROUPS</span></div><div class="sum-item"><span class="sum-value">${duplicates.length}</span><span class="sum-label">OVERLAPS</span></div><div class="sum-item"><span class="sum-value">${conflictCount}</span><span class="sum-label">FIELD DIFFERENCES</span></div>`;
   review.innerHTML = '';
-  if (!duplicates.length) review.innerHTML = '<div class="empty-review">No overlapping entities found. Each map will keep its original entities.</div>';
+  if (!duplicates.length) review.innerHTML = '<div class="empty-review">No shared placements found between copies of the same YMAP. Each map keeps its original entities.</div>';
   for (const group of duplicates) review.append(renderGroup(group));
   reviewReady = true;
   exportXmlBtn.disabled = false;
@@ -502,7 +506,7 @@ async function checkConverter() {
   exportYmapBtn.disabled = !converterReady || !reviewReady || activeOperation;
 }
 
-const installedVersion = '0.2.8';
+const installedVersion = '0.2.9';
 const repository = 'Headache-Developments/HD_ConflictTool';
 
 function isNewerVersion(candidate, installed) {
